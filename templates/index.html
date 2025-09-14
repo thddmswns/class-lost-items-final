@@ -1,156 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>분실물 관리 웹</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: auto;
-            padding: 10px;
-            background-color: #f9f9f9;
-        }
-        h1, h2, h3 {
-            text-align: center;
-        }
-        form {
-            margin: 15px 0;
-            text-align: center;
-        }
-
-        /* 입력칸 가로 배열 */
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px; /* 입력칸 사이 간격 */
-            margin-bottom: 10px;
-        }
-
-        input, button {
-            font-size: 18px;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        input {
-            flex: 1; /* 남은 공간 자동 분배 */
-            min-width: 100px; /* 최소 폭 */
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            min-width: 120px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background: white;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            word-wrap: break-word;
-        }
-        .delete-btn {
-            background-color: #f44336;
-        }
-        .delete-btn:hover {
-            background-color: #d32f2f;
-        }
-        p {
-            text-align: center;
-            font-size: 16px;
-            color: red;
-        }
-
-        /* 반응형 */
-        @media (max-width: 480px) {
-            input, button {
-                font-size: 16px;
-                padding: 10px;
-            }
-            li {
-                font-size: 14px;
-                padding: 10px;
-            }
-            .form-row {
-                flex-direction: column; /* 모바일에서는 세로 배열 */
-                align-items: center;
-            }
-        }
-    </style>
+    <title>분실물 찾기</title>
 </head>
 <body>
-    <h1>분실물 관리소</h1>
-
-    <h2>등록</h2>
-    <form method="post">
-        <div class="form-row">
-            <input type="text" name="name" placeholder="이름" required>
-            <input type="text" name="place" placeholder="장소" required>
-            <input type="text" name="contact" placeholder="연락처" required>
-            <button type="submit" name="register">등록</button>
-        </div>
+    <h1>분실물 등록</h1>
+    <form method="POST">
+        이름: <input type="text" name="name">
+        장소: <input type="text" name="location">
+        연락처: <input type="text" name="contact">
+        <button type="submit">등록</button>
     </form>
-
-    <h2>검색</h2>
-    <form method="post">
-        <div class="form-row">
-            <input type="text" name="search" placeholder="검색어" required>
-            <button type="submit" name="search">검색</button>
-        </div>
-    </form>
-
-    {% if items %}
-    <h3>검색 결과:</h3>
+    <h2>등록된 분실물</h2>
     <ul>
         {% for item in items %}
-        <li>
-            물건: {{ item.name }}<br>
-            장소: {{ item.place }}<br>
-            날짜: {{ item.date }}<br>
-            연락처: {{ item.contact }}<br>
-            <form action="/delete/{{ item.id }}" method="post" style="display:inline;">
-                <button type="submit" class="delete-btn">찾았음 (삭제)</button>
-            </form>
-        </li>
+            <li>{{item.name}} - {{item.location}} - {{item.contact}}</li>
+        {% else %}
+            <li>등록된 분실물이 없습니다.</li>
         {% endfor %}
     </ul>
-    {% elif message %}
-    <p>{{ message }}</p>
-    {% endif %}
-
-    <h2>전체 등록된 분실물</h2>
-    {% if all_items %}
-    <ul>
-        {% for item in all_items %}
-        <li>
-            물건: {{ item.name }}<br>
-            장소: {{ item.place }}<br>
-            날짜: {{ item.date }}<br>
-            연락처: {{ item.contact }}<br>
-            <form action="/delete/{{ item.id }}" method="post" style="display:inline;">
-                <button type="submit" class="delete-btn">찾았음 (삭제)</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>등록된 분실물이 없습니다.</p>
-    {% endif %}
 </body>
 </html>
