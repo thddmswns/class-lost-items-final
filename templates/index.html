@@ -5,57 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>분실물 목록</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f7f7f7;
-        }
-        h1 { text-align: center; margin-bottom: 20px; }
-        form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        input[type="text"], input[type="date"] {
-            padding: 8px;
-            font-size: 16px;
-            flex: 1 1 200px;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            flex: 1 1 100px;
-        }
-        table {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        @media (max-width: 800px) {
-            th, td { font-size: 14px; padding: 6px; }
-            button { font-size: 14px; padding: 8px; }
-        }
-        @media (max-width: 500px) {
-            form { flex-direction: column; }
-        }
+        * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color:#f4f4f9; padding:20px; }
+        h1 { text-align:center; margin-bottom:20px; color:#333; }
+        form { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:30px; }
+        input[type="text"], input[type="date"] { padding:10px; font-size:16px; border-radius:5px; border:1px solid #ccc; flex:1 1 150px; }
+        button { padding:10px 20px; font-size:16px; border:none; border-radius:5px; background-color:#4CAF50; color:white; cursor:pointer; flex:1 1 100px; }
+        button:hover { background-color:#45a049; }
+        table { width:100%; border-collapse:collapse; background-color:#fff; }
+        th, td { padding:12px; text-align:left; border-bottom:1px solid #ddd; }
+        th { background-color:#4CAF50; color:white; }
+        @media (max-width:600px) { form { flex-direction:column; align-items:stretch; } input, button { flex:1 1 100%; } }
     </style>
 </head>
 <body>
@@ -66,6 +26,7 @@
         <input type="date" name="date" required>
         <button type="submit">추가</button>
     </form>
+
     <table>
         <tr>
             <th>이름</th>
