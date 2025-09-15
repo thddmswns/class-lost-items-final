@@ -1,22 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>분실물 찾기</title>
+    <meta charset="UTF-8">
+    <title>분실물 관리</title>
 </head>
 <body>
-    <h1>분실물 등록</h1>
-    <form method="POST">
-        이름: <input type="text" name="name">
-        장소: <input type="text" name="location">
-        연락처: <input type="text" name="contact">
-        <button type="submit">등록</button>
+    <h1>분실물 목록</h1>
+    <form action="/add" method="POST">
+        이름: <input type="text" name="name" required>
+        장소: <input type="text" name="place" required>
+        날짜: <input type="text" name="date" required>
+        <button type="submit">추가</button>
     </form>
-    <h2>등록된 분실물</h2>
     <ul>
         {% for item in items %}
-            <li>{{item.name}} - {{item.location}} - {{item.contact}}</li>
-        {% else %}
-            <li>등록된 분실물이 없습니다.</li>
+            <li>{{ item.name }} - {{ item.place }} ({{ item.date }})</li>
         {% endfor %}
     </ul>
 </body>
