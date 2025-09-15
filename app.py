@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# PostgreSQL 환경변수 읽기
+# PostgreSQL 환경변수
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
@@ -24,22 +24,37 @@ class LostItem(db.Model):
     location = db.Column(db.String(100), nullable=False)
     date = db.Column(db.String(20), nullable=False)
 
-# 테이블 생성 (앱 시작 시 한 번)
 with app.app_context():
     db.create_all()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        name = request.form["name"]
-        location = request.form["location"]
-        date = request.form["date"]
-        new_item = LostItem(name=name, location=location, date=date)
-        db.session.add(new_item)
-        db.session.commit()
-        return redirect("/")
+        if "add" in request.form:
+            name = request.form["name"]
+            location = request.form["location"]
+            date = request.form["date"]
+            new_item = LostItem(name=name, location=location, date=date)
+            db.session.add(new_item)
+            db.session.commit()
+        elif "search" in request.form:
+            keyword = request.form["keyword"]
+            items = LostItem.query.filter(
+                (LostItem.name.ilike(f"%{keyword}%")) |
+                (LostItem.location.ilike(f"%{keyword}%"))
+            ).all()
+            message = "등록된 분실물이 없습니다." if not items else ""
+            return render_template("index.html", items=items, message=message)
     items = LostItem.query.all()
-    return render_template("index.html", items=items)
+    return render_template("index.html", items=items, message="")
+
+@app.route("/delete/<int:item_id>")
+def delete(item_id):
+    item = LostItem.query.get(item_id)
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+    return redirect("/")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
