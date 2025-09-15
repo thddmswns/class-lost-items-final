@@ -2,20 +2,83 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>분실물 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>분실물 목록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        h1 { text-align: center; margin-bottom: 20px; }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="date"] {
+            padding: 8px;
+            font-size: 16px;
+            flex: 1 1 200px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            flex: 1 1 100px;
+        }
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        @media (max-width: 800px) {
+            th, td { font-size: 14px; padding: 6px; }
+            button { font-size: 14px; padding: 8px; }
+        }
+        @media (max-width: 500px) {
+            form { flex-direction: column; }
+        }
+    </style>
 </head>
 <body>
     <h1>분실물 목록</h1>
-    <form action="/add" method="POST">
-        이름: <input type="text" name="name" required>
-        장소: <input type="text" name="place" required>
-        날짜: <input type="text" name="date" required>
+    <form method="POST">
+        <input type="text" name="name" placeholder="이름" required>
+        <input type="text" name="location" placeholder="장소" required>
+        <input type="date" name="date" required>
         <button type="submit">추가</button>
     </form>
-    <ul>
+    <table>
+        <tr>
+            <th>이름</th>
+            <th>장소</th>
+            <th>날짜</th>
+        </tr>
         {% for item in items %}
-            <li>{{ item.name }} - {{ item.place }} ({{ item.date }})</li>
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.location }}</td>
+            <td>{{ item.date }}</td>
+        </tr>
         {% endfor %}
-    </ul>
+    </table>
 </body>
 </html>
