@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
-from datetime import datetime
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# PostgreSQL 환경변수 읽기
+# PostgreSQL 환경변수
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
@@ -15,6 +15,12 @@ DB_NAME = os.getenv("DB_NAME")
 app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# 업로드 폴더
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
 db = SQLAlchemy(app)
 
 # 모델 정의
@@ -23,49 +29,61 @@ class LostItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     place = db.Column(db.String(100), nullable=False)
-    contact = db.Column(db.String(50), nullable=False)
     date = db.Column(db.String(20), nullable=False)
+    contact = db.Column(db.String(100), nullable=False)
+    image = db.Column(db.String(200))  # 이미지 파일명 저장
 
 # 테이블 생성
 with app.app_context():
     db.create_all()
 
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     message = ""
-    items = None
+    if request.method == "POST":
+        if "register" in request.form:
+            name = request.form["name"]
+            place = request.form["place"]
+            date = request.form["date"]
+            contact = request.form["contact"]
 
-    # 분실물 등록
-    if request.method == "POST" and "register" in request.form:
-        name = request.form["name"]
-        place = request.form["place"]
-        contact = request.form["contact"]
-        date = datetime.now().strftime("%Y-%m-%d")
-        new_item = LostItem(name=name, place=place, contact=contact, date=date)
-        db.session.add(new_item)
-        db.session.commit()
-        return redirect("/")
+            # 이미지 처리
+            file = request.files.get("image")
+            filename = None
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-    # 분실물 검색
-    if request.method == "POST" and "search" in request.form:
-        keyword = request.form["search"]
-        items = LostItem.query.filter(
-            (LostItem.name.ilike(f"%{keyword}%")) |
-            (LostItem.place.ilike(f"%{keyword}%")) |
-            (LostItem.contact.ilike(f"%{keyword}%"))
-        ).all()
-        if not items:
-            message = "검색 결과가 없습니다."
+            new_item = LostItem(name=name, place=place, date=date, contact=contact, image=filename)
+            db.session.add(new_item)
+            db.session.commit()
+            return redirect("/")
+        
+        elif "search" in request.form:
+            keyword = request.form["search"]
+            items = LostItem.query.filter(
+                (LostItem.name.ilike(f"%{keyword}%")) | 
+                (LostItem.place.ilike(f"%{keyword}%"))
+            ).all()
+            if not items:
+                message = "검색 결과가 없습니다."
+            return render_template("index.html", items=items, all_items=LostItem.query.all(), message=message)
 
-    # 전체 분실물 리스트
-    all_items = LostItem.query.all()
-    return render_template("index.html", items=items, message=message, all_items=all_items)
+    items = LostItem.query.all()
+    return render_template("index.html", all_items=items, message=message)
 
-# 삭제 기능
 @app.route("/delete/<int:item_id>", methods=["POST"])
-def delete_item(item_id):
+def delete(item_id):
     item = LostItem.query.get(item_id)
     if item:
+        # 이미지 삭제
+        if item.image:
+            path = os.path.join(app.config["UPLOAD_FOLDER"], item.image)
+            if os.path.exists(path):
+                os.remove(path)
         db.session.delete(item)
         db.session.commit()
     return redirect("/")
