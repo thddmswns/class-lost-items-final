@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -29,11 +30,10 @@ class LostItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     place = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(20), nullable=False)
     contact = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.String(20), nullable=False)
     image = db.Column(db.String(200))  # 이미지 파일명 저장
 
-# 테이블 생성
 with app.app_context():
     db.create_all()
 
@@ -43,30 +43,34 @@ def allowed_file(filename):
 @app.route("/", methods=["GET", "POST"])
 def index():
     message = ""
+    items = None
+
     if request.method == "POST":
+        # 등록
         if "register" in request.form:
             name = request.form["name"]
             place = request.form["place"]
-            date = request.form["date"]
             contact = request.form["contact"]
+            date = datetime.now().strftime("%Y-%m-%d")
 
-            # 이미지 처리
             file = request.files.get("image")
             filename = None
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-            new_item = LostItem(name=name, place=place, date=date, contact=contact, image=filename)
+            new_item = LostItem(name=name, place=place, contact=contact, date=date, image=filename)
             db.session.add(new_item)
             db.session.commit()
             return redirect("/")
-        
-        elif "search" in request.form:
+
+        # 검색
+        if "search" in request.form:
             keyword = request.form["search"]
             items = LostItem.query.filter(
-                (LostItem.name.ilike(f"%{keyword}%")) | 
-                (LostItem.place.ilike(f"%{keyword}%"))
+                (LostItem.name.ilike(f"%{keyword}%")) |
+                (LostItem.place.ilike(f"%{keyword}%")) |
+                (LostItem.contact.ilike(f"%{keyword}%"))
             ).all()
             if not items:
                 message = "검색 결과가 없습니다."
@@ -79,7 +83,6 @@ def index():
 def delete(item_id):
     item = LostItem.query.get(item_id)
     if item:
-        # 이미지 삭제
         if item.image:
             path = os.path.join(app.config["UPLOAD_FOLDER"], item.image)
             if os.path.exists(path):
